@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Data</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #e8f5e9, #f1f8e9);
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin: 0;
+            padding: 20px 10px;
+            font-size: 2rem;
+            color: #388e3c;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            resize: horizontal; /* Allow resizing horizontally */
+            overflow: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fafafa;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 1rem;
+        }
+        th {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f1f8e9;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        td {
+            color: #555;
+        }
+        td:first-child {
+            font-weight: bold;
+            color: #388e3c;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #388e3c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2e7d32;
+        }
+        .delete-button {
+            background-color: #d32f2f;
+        }
+        .delete-button:hover {
+            background-color: #b71c1c;
+        }
+        @media (max-width: 600px) {
+            th, td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            button {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Plant Data</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Plant</th>
+                <th>UV</th>
+                <th>Moisture</th>
+                <th>Vegetation Index</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody id="plant-data">
+            <!-- Data from DB will be shown here -->
+        </tbody>
+    </table>
+    <div class="button-group">
+        <button id="refresh-data-btn">Refresh Data</button>
+        <button id="delete-data-btn" class="delete-button">Delete All Data</button>
+    </div>
+</div>
+
+<script>
+    let autoRefresh; // Variable to hold the interval for auto-refresh
+
+    // Fetch and display plant data
+    function fetchPlantData() {
+        fetch('/api/plant-data')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tableBody = document.getElementById('plant-data');
+                tableBody.innerHTML = ''; // Clear current table data
+
+                data.forEach(item => {
+                    const date = new Date(item.time);
+                    const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Convert to local time
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.plant}</td>
+                        <td>${item.uv}</td>
+                        <td>${item.moisture}</td>
+                        <td>${item.vegetation_index}</td>
+                        <td>${localTime.toLocaleString('en-US', { timeZoneName: 'short' })}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching plant data:', error));
+    }
+
+    // Delete all data
+    function deleteAllData() {
+        fetch('/api/plant-data', {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                const tableBody = document.getElementById('plant-data');
+                tableBody.innerHTML = ''; // Clear table data
+                alert('All data has been deleted from the server.');
+            } else {
+                alert(`Failed to delete data. Status: ${response.status}`);
+            }
+        })
+        .catch(error => console.error('Error deleting data:', error));
+    }
+
+    // Set up button click events
+    document.getElementById('refresh-data-btn').addEventListener('click', fetchPlantData); // Manual refresh
+    document.getElementById('delete-data-btn').addEventListener('click', deleteAllData); // Delete all data
+
+    // Fetch data every 5 seconds
+    autoRefresh = setInterval(fetchPlantData, 10000);
+
+    // Initial fetch when the page loads
+    fetchPlantData();
+</script>
+
+</body>
+</html>
