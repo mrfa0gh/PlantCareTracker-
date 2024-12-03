@@ -21,5 +21,14 @@ def get_plant_data():
     conn.close()
     return jsonify(data)
 
+@app.route('/api/plant-data', methods=['DELETE'])
+def delete_all_plant_data():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM plant_data")  # Delete all rows from the table
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "All plant data has been deleted successfully."}), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
