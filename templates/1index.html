@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Chart - Moisture</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="lineChart" width="400" height="200"></canvas>
+    <script>
+        // Example data
+        const data = [
+            { time: "2024-12-01 10:00", moisture: 45 },
+            { time: "2024-12-01 12:00", moisture: 50 },
+            { time: "2024-12-01 14:00", moisture: 40 },
+            { time: "2024-12-01 16:00", moisture: 55 }
+        ];
+
+        const ctx = document.getElementById('lineChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => item.time), // Time points
+                datasets: [{
+                    label: 'Moisture (%)',
+                    data: data.map(item => item.moisture),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4 // Smooth lines
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Time' } },
+                    y: { title: { display: true, text: 'Moisture (%)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
